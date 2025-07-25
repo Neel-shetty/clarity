@@ -1,0 +1,38 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+*.rpm
+*.deb
+*.apk
+*.bin
+
+# Test binaries
+*_test
+
+# Output of 'go build'
+# If you're building a single binary, you might want to ignore the executable.
+# For example, if your main package is in 'cmd/my-app', and you build a binary named 'my-app' in the root:
+# /my-app
+
+# Dependency directories
+vendor/
+
+# Go module cache
+# This directory stores downloaded modules and build cache.
+# It's usually located in GOPATH/pkg/mod and should not be committed.
+# If you are using Go modules, `go.mod` and `go.sum` are essential and should be committed.
+# However, if you have a local `pkg` directory for caching, you might want to ignore it:
+# pkg/
+
+# Editor-specific files
+.idea/
+.vscode/
+*.swp
+*.bak
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
