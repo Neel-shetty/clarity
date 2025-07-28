@@ -7,7 +7,7 @@ export default function Home() {
         <div>
             <div className="flex items-center justify-between px-6 py-4 bg-gray-900 text-white shadow">
                 <span className="text-lg font-semibold">
-                    Hello, {user.name}
+                    Hello, {user?.username ?? "Guest"}
                 </span>
                 <Button variant="outline" onClick={logout}>
                     Logout

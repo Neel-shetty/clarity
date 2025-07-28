@@ -33,7 +33,7 @@ const LoginPage: React.FC = () => {
             navigate('/home');
         }catch (err) {
             console.error('Error during login:', err);
-            setError('Error!,Please try again later.');
+            setError('Failed to Login, Try again');
         }
     };
 

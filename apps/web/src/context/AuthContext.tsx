@@ -2,8 +2,12 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import type { ReactNode } from 'react';
 
+type User = {
+  id : string;
+  username : string;
+}
 type AuthContextType = {
-  user: any;
+  user: User | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -15,9 +19,9 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
-    axios.get('/user/me')
+    axios.get<User>('/user/me')
       .then(res => setUser(res.data))
       .catch(() => setUser(null));
   }, []);

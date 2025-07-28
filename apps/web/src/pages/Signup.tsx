@@ -9,9 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
-    username: z.string().min(1),
-    password: z.string().min(1),
-    confirmPassword: z.string().min(1),
+    username: z.string().min(5,"Username must be atleast 5 characters long.").regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, underscores, and hyphens."),
+    password: z.string().min(6, "Password must be at least 6 characters long."),
+    confirmPassword: z.string().min(6,"please confirm your password"),
 });
 
 export default function Signup() {
@@ -29,6 +29,8 @@ export default function Signup() {
         }
         const result = formSchema.safeParse({ username, password, confirmPassword });
         if (!result.success) {
+            const firstError = result.error.issues[0]?.message || "Invalid input.";
+            setError(firstError);
             setError(result.error.message);
             return;
         }
