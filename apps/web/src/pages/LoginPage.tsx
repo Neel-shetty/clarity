@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
-    identifier : z.string().min(4,"Enter the username or email"),
+    identifier : z.string().email("Invaild email"),
     password : z.string().min(6,"password must contain 6 characters").max(30,"password must be at most 30 characters")
 });
 
@@ -47,8 +47,8 @@ const LoginPage: React.FC = () => {
                 <CardContent>
                     <form onSubmit={handleSubmit} className="grid gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="identifier">Username or Email</Label>
-                            <Input id="identifier" type="text" placeholder=" Username or Email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required/>
+                            <Label htmlFor="identifier">Email</Label>
+                            <Input id="identifier" type="text" placeholder="Email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required/>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="password">Password</Label>
