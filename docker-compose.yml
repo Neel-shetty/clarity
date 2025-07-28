@@ -25,6 +25,16 @@ services:
     # Optionally configure API URL if frontend needs it
     # environment:
     #   - REACT_APP_API_URL=http://localhost:8080
+
+  ai-service:
+    build:
+      context: ./apps/ai-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - api
+
   db:
     image: postgres:17.5-alpine3.22
     restart: always
