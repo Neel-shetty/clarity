@@ -9,12 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
-    username : z.string().min(4,"name must be 4 characters").max(30,"name must be at most 30 characters"),
+    identifier : z.string().min(4,"Enter the username or email"),
     password : z.string().min(6,"password must contain 6 characters").max(30,"password must be at most 30 characters")
 });
 
 const LoginPage: React.FC = () => {
-    const [username, setUsername] = useState<string>('');
+    const [identifier, setIdentifier] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
     const {login} = useAuth();
@@ -23,13 +23,13 @@ const LoginPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        const result = formSchema.safeParse({ username, password });
+        const result = formSchema.safeParse({ identifier, password });
         if (!result.success) {
             setError('Invalid input');
             return;
         }
         try {
-            await login(username, password);
+            await login(identifier, password);
             navigate('/home');
         }catch (err) {
             console.error('Error during login:', err);
@@ -42,13 +42,13 @@ const LoginPage: React.FC = () => {
             <Card className="w-full max-w-md ">
                 <CardHeader>
                     <CardTitle className="text-2xl">Login</CardTitle>
-                    <CardDescription>Enter your username and password to log in.</CardDescription>
+                    <CardDescription>Enter your username or Email and password to log in.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="grid gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="username">Username</Label>
-                            <Input id="username" type="text" placeholder=" username " value={username} onChange={(e) => setUsername(e.target.value)} required/>
+                            <Label htmlFor="identifier">Username or Email</Label>
+                            <Input id="identifier" type="text" placeholder=" Username or Email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required/>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="password">Password</Label>

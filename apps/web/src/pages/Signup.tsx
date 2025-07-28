@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
     username: z.string().min(5,"Username must be atleast 5 characters long.").regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, underscores, and hyphens."),
+    email : z.string().email("Invalid email"),
     password: z.string().min(6, "Password must be at least 6 characters long."),
     confirmPassword: z.string().min(6,"please confirm your password"),
 });
@@ -18,6 +19,7 @@ export default function Signup() {
     const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [email,setEmail] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
 
@@ -27,17 +29,16 @@ export default function Signup() {
             setError('Passwords do not match.');
             return;
         }
-        const result = formSchema.safeParse({ username, password, confirmPassword });
+        const result = formSchema.safeParse({ username,email,password, confirmPassword });
         if (!result.success) {
             const firstError = result.error.issues[0]?.message || "Invalid input.";
             setError(firstError);
-            setError(result.error.message);
             return;
         }
         try {
             const response = await axios.post(
                 "/user/signup",
-                { username, password },
+                { username,email,password },
                 {
                     headers: { "Content-Type": "application/json" },
                     withCredentials: true
@@ -57,13 +58,17 @@ export default function Signup() {
         <Card className="w-full max-w-md ">
             <CardHeader className="text-center">
                 <CardTitle className="text-2xl">Signup</CardTitle>
-                <CardDescription>Enter your username and password to signup.</CardDescription>
+                <CardDescription>Enter your username, Email and password to signup.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
                 <form className="grid gap-4" onSubmit={handleSubmit}> 
                     <div className="grid gap-2">
                         <Label htmlFor="username">Username</Label>
                         <Input id="username" type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="password">Password</Label>
