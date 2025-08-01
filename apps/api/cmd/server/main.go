@@ -9,10 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/HarshithRajesh/clarity/internal/api"
-	"github.com/HarshithRajesh/clarity/internal/config"
-	"github.com/HarshithRajesh/clarity/internal/repository"
-	"github.com/HarshithRajesh/clarity/internal/service"
+	"github.com/Neel-shetty/clarity/internal/api"
+	"github.com/Neel-shetty/clarity/internal/config"
+	"github.com/Neel-shetty/clarity/internal/repository"
+	"github.com/Neel-shetty/clarity/internal/service"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -22,14 +22,14 @@ func health(c *gin.Context) {
 }
 
 func main() {
-	_, err := config.ConnectDB()
+	db, err := config.ConnectDB()
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err.Error())
 	}
 
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
-	userHandler := api.NewUserHandler(userService, mlClient)
+	userHandler := api.NewUserHandler(userService)
 
 	r := gin.Default()
 	config := cors.DefaultConfig()
@@ -42,6 +42,8 @@ func main() {
 
 	r.Use(cors.New(config))
 	r.GET("/health", health)
+	r.POST("/signup", userHandler.Signup)
+	r.POST("/login", userHandler.Login)
 
 	port := os.Getenv("PORT")
 	if port == "" {

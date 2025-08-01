@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/HarshithRajesh/clarity/internal/domain"
-	"github.com/HarshithRajesh/clarity/internal/service"
+	"github.com/Neel-shetty/clarity/internal/domain"
+	"github.com/Neel-shetty/clarity/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,13 +16,13 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 	return &UserHandler{userService}
 }
 
-func (h *UserHandler) SignUp(c *gin.Context) {
+func (h *UserHandler) Signup(c *gin.Context) {
 	var user domain.SignUp
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Request Payload", "error message": err.Error()})
 		return
 	}
-	err := h.userService.SignUp(c.Request.Context(), &user)
+	err := h.userService.Signup(c.Request.Context(), &user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Unable to create the profile", "error": err.Error()})
 		return

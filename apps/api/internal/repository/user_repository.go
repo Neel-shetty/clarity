@@ -3,13 +3,13 @@ package repository
 import (
 	"context"
 
-	"github.com/HarshithRajesh/clarity/internal/domain"
+	"github.com/Neel-shetty/clarity/internal/domain"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *domain.User) error
-	CheckUserExist(ctx context.Context, email string) (bool, error)
+	CheckUserExist(ctx context.Context, email string) (*domain.User, error)
 }
 
 type userRepository struct {
@@ -17,10 +17,10 @@ type userRepository struct {
 }
 
 func NewUserRepository(db *gorm.DB) UserRepository {
-	return &userRepositroy{db}
+	return &userRepository{db}
 }
 
-func (r *userRepository) CheckUserExist(ctx context.Context, email string) (string, error) {
+func (r *userRepository) CheckUserExist(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
 	err := r.db.WithContext(ctx).Where("email=?", email).First(&user).Error
 	if err != nil {
