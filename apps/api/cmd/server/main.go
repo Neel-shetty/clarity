@@ -18,7 +18,7 @@ import (
 )
 
 func health(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Health check working"})
+	c.JSON(200, gin.H{"message": "Health check working", "status": 1})
 }
 
 func main() {
