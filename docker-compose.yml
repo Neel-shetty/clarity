@@ -38,10 +38,18 @@ services:
   db:
     image: postgres:17.5-alpine3.22
     restart: always
-    env_file:
-      - .env
+    environment:
+
+      POSTGRES_USER: ${POSTGRES_USER}
+
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_USER}
+    
+      POSTGRES_PORT: ${DB_PORT}
+    
+    
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
