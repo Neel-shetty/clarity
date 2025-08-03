@@ -9,6 +9,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"github.com/Neel-shetty/clarity/internal/domain"
 	"github.com/joho/godotenv"
 )
 
@@ -36,5 +37,6 @@ func ConnectDB() (*gorm.DB, error) {
 	sqlDb.SetMaxIdleConns(25)
 	sqlDb.SetConnMaxLifetime(5 * time.Minute)
 	fmt.Println("Database successfully connected to GORM")
+	db.AutoMigrate(&domain.User{})
 	return db, nil
 }
