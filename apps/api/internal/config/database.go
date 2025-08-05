@@ -31,7 +31,7 @@ func ConnectDB() (*gorm.DB, error) {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to the database %v", err)
+		return nil, fmt.Errorf("failed to connect to the database %v", err)
 	}
 	sqlDb, err := db.DB()
 	if err != nil {
@@ -52,7 +52,7 @@ var RedisClient *redis.Client
 func ConnectRedisDB() (*redis.Client, error) {
 	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
 	if err != nil {
-		log.Fatalf("env db is not converted to int")
+		log.Fatalf("could not read REDIS_DB environment variable")
 	}
 	RedisClient = redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("REDIS_ADDR"),
