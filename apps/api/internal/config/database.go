@@ -52,7 +52,7 @@ var RedisClient *redis.Client
 func ConnectRedisDB() (*redis.Client, error) {
 	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
 	if err != nil {
-		log.Fatalf("could not read REDIS_DB environment variable")
+		log.Fatalf("invalid REDIS_DB environment variable: must be a valid integer (got %q)", os.Getenv("REDIS_DB"))
 	}
 	RedisClient = redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("REDIS_ADDR"),
