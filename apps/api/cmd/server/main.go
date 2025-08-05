@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/Neel-shetty/clarity/internal/api"
 	"github.com/Neel-shetty/clarity/internal/config"
+	"github.com/Neel-shetty/clarity/internal/middleware"
 	"github.com/Neel-shetty/clarity/internal/repository"
 	"github.com/Neel-shetty/clarity/internal/service"
 	"github.com/gin-contrib/cors"
@@ -27,9 +29,16 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err.Error())
 	}
 
+	redisClient, err := config.ConnectRedisDB()
+	if err != nil {
+		fmt.Println("Redis client is not initialized")
+	}
+	defer redisClient.Close()
+
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
-	userHandler := api.NewUserHandler(userService)
+	userHandler := api.NewUserHandler(userService, redisClient)
+	authMiddleware := middleware.AuthMiddleware(redisClient)
 
 	r := gin.Default()
 	config := cors.DefaultConfig()
@@ -42,8 +51,14 @@ func main() {
 
 	r.Use(cors.New(config))
 	r.GET("/health", health)
-	r.POST("/signup", userHandler.Signup)
-	r.POST("/login", userHandler.Login)
+	r.POST("/api/signup", userHandler.Signup)
+	r.POST("/api/login", userHandler.Login)
+	authorized := r.Group("/api")
+	authorized.Use(authMiddleware) // Apply the middleware here
+	{
+		authorized.GET("/profile", userHandler.GetProfile)
+		authorized.POST("/logout", userHandler.Logout)
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
