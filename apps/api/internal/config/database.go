@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -49,15 +50,19 @@ func ConnectDB() (*gorm.DB, error) {
 var RedisClient *redis.Client
 
 func ConnectRedisDB() (*redis.Client, error) {
+	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
+	if err != nil {
+		log.Fatalf("env db is not converted to int")
+	}
 	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
+		Addr:     os.Getenv("REDIS_ADDR"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       db,
 		Protocol: 2,
 	})
 
 	ctx := context.Background()
-	_, err := RedisClient.Ping(ctx).Result()
+	_, err = RedisClient.Ping(ctx).Result()
 	if err != nil {
 		log.Fatalf("Failed to connect to the Redis Database")
 	} else {

@@ -67,8 +67,12 @@ func (s *userService) Login(ctx context.Context, login *domain.Login) (*domain.U
 }
 func (s *userService) GetProfile(ctx context.Context, userID uuid.UUID) (*domain.User, error) {
 	user, err := s.repo.FindByID(ctx, userID)
+
 	if err != nil {
-		return nil, errors.New("profile not found")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("profile not found")
+		}
+		return nil, err
 	}
 	return user, nil
 }

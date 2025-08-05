@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -99,10 +98,9 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 				"status": 0})
 		return
 	}
-	fmt.Println(userId)
 	userID, err := uuid.Parse(userId.(string))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format", "user": userID})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
 		return
 	}
 
@@ -126,7 +124,15 @@ func (h *UserHandler) Logout(c *gin.Context) {
 				"status": 1})
 		return
 	}
-	h.redisClient.Del(context.Background(), "session:"+sessionID)
+	// h.redisClient.Del(context.Background(), "session:"+sessionID)
+	delResult := h.redisClient.Del(context.Background(), "session:"+sessionID)
+	if err := delResult.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError,
+			gin.H{"message": "Failed to logout: could not delete session",
+				"error":  err.Error(),
+				"status": 0})
+		return
+	}
 	c.SetCookie("session_id", "", -1, "/", "localhost", false, true)
 	c.JSON(http.StatusOK,
 		gin.H{"message": "Logout Successfully",
