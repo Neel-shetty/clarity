@@ -51,10 +51,10 @@ func main() {
 
 	r.Use(cors.New(config))
 	r.GET("/health", health)
-	r.POST("/api/signup", userHandler.Signup)
-	r.POST("/api/login", userHandler.Login)
-	authorized := r.Group("/api")
-	authorized.Use(authMiddleware) // Apply the middleware here
+	r.POST("/api/v1/signup", userHandler.Signup)
+	r.POST("/api/v1/login", userHandler.Login)
+	authorized := r.Group("/api/v1")
+	authorized.Use(authMiddleware)
 	{
 		authorized.GET("/profile", userHandler.GetProfile)
 		authorized.POST("/logout", userHandler.Logout)

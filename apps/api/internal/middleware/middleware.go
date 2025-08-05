@@ -17,6 +17,7 @@ func AuthMiddleware(redisClient *redis.Client) gin.HandlerFunc {
 				gin.H{"error": "Unauthorized"})
 			return
 		}
+		// sessionID := uuid.New().String()
 		sessionKey := "session:" + sessionID
 		userId, err := redisClient.Get(context.Background(), "session:"+sessionID).Result()
 		if err != nil {

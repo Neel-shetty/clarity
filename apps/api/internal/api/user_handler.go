@@ -30,21 +30,18 @@ func (h *UserHandler) Signup(c *gin.Context) {
 		c.JSON(
 			http.StatusBadRequest,
 			gin.H{"error": "Invalid Request Payload",
-				"error message": err.Error(),
-				"status":        0})
+				"error message": err.Error()})
 		return
 	}
 	err := h.userService.Signup(c.Request.Context(), &user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest,
 			gin.H{"message": "Unable to create the profile !!!",
-				"error":  err.Error(),
-				"status": 0})
+				"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated,
-		gin.H{"message": "User created Successfully !!!",
-			"status": 1})
+		gin.H{"message": "User created Successfully !!!"})
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
@@ -54,16 +51,14 @@ func (h *UserHandler) Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest,
 			gin.H{"error": "Invalid Request Payload",
-				"error message": err.Error(),
-				"status":        0})
+				"error message": err.Error()})
 		return
 	}
 	user, err := h.userService.Login(c.Request.Context(), &login)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized,
 			gin.H{"error": "Invalid email or password",
-				"error message": err.Error(),
-				"status":        0})
+				"error message": err.Error()})
 		return
 	}
 	sessionID := uuid.New().String()
@@ -85,17 +80,14 @@ func (h *UserHandler) Login(c *gin.Context) {
 		true,
 	)
 	c.JSON(http.StatusOK,
-		gin.H{"message": "Login Successfully",
-			"status": 1,
-			"user":   user})
+		gin.H{"message": "Login Successfully"})
 }
 
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	userId, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized,
-			gin.H{"error": "User Id is not found in the session",
-				"status": 0})
+			gin.H{"error": "User Id is not found in the session"})
 		return
 	}
 	userID, err := uuid.Parse(userId.(string))
@@ -120,22 +112,18 @@ func (h *UserHandler) Logout(c *gin.Context) {
 	sessionID, err := c.Cookie("session_id")
 	if err != nil {
 		c.JSON(http.StatusOK,
-			gin.H{"message": "Already logged out",
-				"status": 1})
+			gin.H{"message": "Already logged out"})
 		return
 	}
-	// h.redisClient.Del(context.Background(), "session:"+sessionID)
 	delResult := h.redisClient.Del(context.Background(), "session:"+sessionID)
 	if err := delResult.Err(); err != nil {
 		c.JSON(http.StatusInternalServerError,
 			gin.H{"message": "Failed to logout: could not delete session",
-				"error":  err.Error(),
-				"status": 0})
+				"error": err.Error()})
 		return
 	}
 	c.SetCookie("session_id", "", -1, "/", "localhost", false, true)
 	c.JSON(http.StatusOK,
-		gin.H{"message": "Logout Successfully",
-			"status": 1})
+		gin.H{"message": "Logout Successfully"})
 
 }
