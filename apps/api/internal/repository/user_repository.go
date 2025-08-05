@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/Neel-shetty/clarity/internal/domain"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *domain.User) error
 	CheckUserExist(ctx context.Context, email string) (*domain.User, error)
+	FindByID(ctx context.Context, userID uuid.UUID) (*domain.User, error)
 }
 
 type userRepository struct {
@@ -32,4 +34,14 @@ func (r *userRepository) CheckUserExist(ctx context.Context, email string) (*dom
 func (r *userRepository) CreateUser(ctx context.Context, user *domain.User) error {
 	res := r.db.WithContext(ctx).Create(user)
 	return res.Error
+}
+
+func (r *userRepository) FindByID(ctx context.Context, userID uuid.UUID) (*domain.User, error) {
+	var user domain.User
+	err := r.db.WithContext(ctx).Where("id=?", userID).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+
 }

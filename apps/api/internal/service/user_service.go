@@ -6,13 +6,15 @@ import (
 
 	"github.com/Neel-shetty/clarity/internal/domain"
 	"github.com/Neel-shetty/clarity/internal/repository"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type UserService interface {
 	Signup(ctx context.Context, signup *domain.SignUp) error
-	Login(ctx context.Context, login *domain.Login) error
+	Login(ctx context.Context, login *domain.Login) (*domain.User, error)
+	GetProfile(ctx context.Context, userID uuid.UUID) (*domain.User, error)
 }
 type userService struct {
 	repo repository.UserRepository
@@ -48,18 +50,29 @@ func (s *userService) Signup(ctx context.Context, signup *domain.SignUp) error {
 	return nil
 }
 
-func (s *userService) Login(ctx context.Context, login *domain.Login) error {
+func (s *userService) Login(ctx context.Context, login *domain.Login) (*domain.User, error) {
 	user, err := s.repo.CheckUserExist(ctx, login.Email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("invalid email ")
+			return nil, errors.New("invalid email ")
 		}
-		return err
+		return nil, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(login.Password))
 	if err != nil {
-		return errors.New("invalid  password")
+		return nil, errors.New("invalid  password")
 	}
-	return nil
+	return user, nil
+}
+func (s *userService) GetProfile(ctx context.Context, userID uuid.UUID) (*domain.User, error) {
+	user, err := s.repo.FindByID(ctx, userID)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("profile not found")
+		}
+		return nil, err
+	}
+	return user, nil
 }

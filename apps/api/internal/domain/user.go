@@ -14,6 +14,10 @@ type User struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
+type Profile struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
 
 type SignUp struct {
 	Name          string `json:"name"`
@@ -25,7 +29,4 @@ type SignUp struct {
 type Login struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-type Profile struct {
-	Name string `json:"name"`
 }
