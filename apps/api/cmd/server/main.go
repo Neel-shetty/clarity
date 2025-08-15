@@ -49,9 +49,9 @@ func main() {
 	config.AllowCredentials = true
 	config.MaxAge = 12 * time.Hour
 
+	r.Use(cors.New(config))
 	r.GET("/health", health)
 	api := r.Group("/api/v1")
-	api.Use(cors.New(config))
 	api.POST("/signup", userHandler.Signup)
 	api.POST("/login", userHandler.Login)
 	authorized := api.Group("")
