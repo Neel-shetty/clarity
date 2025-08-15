@@ -43,17 +43,18 @@ func main() {
 	r := gin.Default()
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
-	config.AllowMethods = []string{"POST", "GET", "PUT", "OPTIONS"}
+	config.AllowMethods = []string{"POST", "GET", "PUT", "PATCH", "OPTIONS"}
 	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"}
 	config.ExposeHeaders = []string{"Content-Length"}
 	config.AllowCredentials = true
 	config.MaxAge = 12 * time.Hour
 
-	r.Use(cors.New(config))
 	r.GET("/health", health)
-	r.POST("/api/v1/signup", userHandler.Signup)
-	r.POST("/api/v1/login", userHandler.Login)
-	authorized := r.Group("/api/v1")
+	api := r.Group("/api/v1")
+	api.Use(cors.New(config))
+	api.POST("/signup", userHandler.Signup)
+	api.POST("/login", userHandler.Login)
+	authorized := api.Group("")
 	authorized.Use(authMiddleware)
 	{
 		authorized.GET("/profile", userHandler.GetProfile)

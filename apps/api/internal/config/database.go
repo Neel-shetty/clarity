@@ -50,6 +50,7 @@ func ConnectDB() (*gorm.DB, error) {
 var RedisClient *redis.Client
 
 func ConnectRedisDB() (*redis.Client, error) {
+	log.Println("Attempting to connect to Redis DB")
 	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
 	if err != nil {
 		log.Fatalf("invalid REDIS_DB environment variable: must be a valid integer (got %q)", os.Getenv("REDIS_DB"))
