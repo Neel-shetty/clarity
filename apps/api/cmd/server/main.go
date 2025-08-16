@@ -35,21 +35,23 @@ func main() {
 	}
 	defer redisClient.Close()
 
+	appConfig := config.Load()
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
-	userHandler := api.NewUserHandler(userService, redisClient)
+	redisSessionService := service.NewRedisSessionService(redisClient)
+	userHandler := api.NewUserHandler(userService, redisSessionService, appConfig)
 	authMiddleware := middleware.AuthMiddleware(redisClient)
 
 	r := gin.Default()
-	config := cors.DefaultConfig()
-	config.AllowAllOrigins = true
-	config.AllowMethods = []string{"POST", "GET", "PUT", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"}
-	config.ExposeHeaders = []string{"Content-Length"}
-	config.AllowCredentials = true
-	config.MaxAge = 12 * time.Hour
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowMethods = []string{"POST", "GET", "PUT", "OPTIONS"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"}
+	corsConfig.ExposeHeaders = []string{"Content-Length"}
+	corsConfig.AllowCredentials = true
+	corsConfig.MaxAge = 12 * time.Hour
 
-	r.Use(cors.New(config))
+	r.Use(cors.New(corsConfig))
 	r.GET("/health", health)
 	r.POST("/api/v1/signup", userHandler.Signup)
 	r.POST("/api/v1/login", userHandler.Login)
