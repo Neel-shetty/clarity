@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Neel-shetty/clarity/internal/config"
-	"github.com/Neel-shetty/clarity/internal/domain"
+	"github.com/Neel-shetty/clarity/internal/model"
 	"github.com/Neel-shetty/clarity/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -27,7 +27,7 @@ func NewUserHandler(userService service.UserService, sessionService service.Sess
 }
 
 func (h *UserHandler) Signup(c *gin.Context) {
-	var user domain.SignUp
+	var user model.SignUp
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -49,7 +49,7 @@ func (h *UserHandler) Signup(c *gin.Context) {
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
-	var login domain.Login
+	var login model.Login
 
 	err := c.ShouldBindJSON(&login)
 	if err != nil {
@@ -108,7 +108,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	user := domain.Profile{
+	user := model.Profile{
 		Name:  profile.Name,
 		Email: profile.Email,
 	}

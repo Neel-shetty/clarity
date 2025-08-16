@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Neel-shetty/clarity/internal/api"
+	"github.com/Neel-shetty/clarity/internal/handler"
 	"github.com/Neel-shetty/clarity/internal/config"
 	"github.com/Neel-shetty/clarity/internal/middleware"
 	"github.com/Neel-shetty/clarity/internal/repository"
@@ -39,7 +39,7 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
 	redisSessionService := service.NewRedisSessionService(redisClient)
-	userHandler := api.NewUserHandler(userService, redisSessionService, appConfig)
+	userHandler := handler.NewUserHandler(userService, redisSessionService, appConfig)
 	authMiddleware := middleware.AuthMiddleware(redisClient)
 
 	r := gin.Default()
