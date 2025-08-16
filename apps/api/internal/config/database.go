@@ -11,7 +11,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/Neel-shetty/clarity/internal/domain"
+	"github.com/Neel-shetty/clarity/internal/model"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 )
@@ -41,7 +41,7 @@ func ConnectDB() (*gorm.DB, error) {
 	sqlDb.SetMaxIdleConns(25)
 	sqlDb.SetConnMaxLifetime(5 * time.Minute)
 	fmt.Println("Database successfully connected to GORM")
-	if err := db.AutoMigrate(&domain.User{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 	return db, nil
