@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Neel-shetty/clarity/internal/model"
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid/v5"
 	"gorm.io/gorm"
 )
 

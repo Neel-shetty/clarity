@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/Neel-shetty/clarity/internal/model"
 	"github.com/Neel-shetty/clarity/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid/v5"
 )
 
 type UserHandler struct {
@@ -67,7 +68,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	sessionID, err := h.sessionService.CreateSession(c.Request.Context(), user.Id, 24*time.Hour)
+	sessionID, err := h.sessionService.CreateSession(c.Request.Context(), user.ID, 24*time.Hour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			gin.H{"error": "Failed to create the session"})
@@ -96,24 +97,26 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	userID, err := uuid.Parse(userId.(string))
+	userID, err := uuid.FromString(userId.(string))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
 		return
 	}
 
-	profile, err := h.userService.GetProfile(c.Request.Context(), userID)
+	user, err := h.userService.GetProfile(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
-	user := model.Profile{
-		Name:  profile.Name,
-		Email: profile.Email,
+	profile := model.Profile{
+		FullName: user.Name,
 	}
+	log.Println(profile.ID.String())
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, gin.H{
+		"name": profile.FullName,
+	})
 }
 
 func (h *UserHandler) Logout(c *gin.Context) {
