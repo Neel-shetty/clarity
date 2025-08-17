@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Neel-shetty/clarity/internal/api"
+	"github.com/Neel-shetty/clarity/internal/handler"
 	"github.com/Neel-shetty/clarity/internal/config"
 	"github.com/Neel-shetty/clarity/internal/middleware"
 	"github.com/Neel-shetty/clarity/internal/repository"
@@ -35,21 +35,24 @@ func main() {
 	}
 	defer redisClient.Close()
 
+	appConfig := config.Load()
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
-	userHandler := api.NewUserHandler(userService, redisClient)
+	redisSessionService := service.NewRedisSessionService(redisClient)
+	userHandler := handler.NewUserHandler(userService, redisSessionService, appConfig)
 	authMiddleware := middleware.AuthMiddleware(redisClient)
 
 	r := gin.Default()
-	config := cors.DefaultConfig()
-	config.AllowAllOrigins = true
-	config.AllowMethods = []string{"POST", "GET", "PUT", "PATCH", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"}
-	config.ExposeHeaders = []string{"Content-Length"}
-	config.AllowCredentials = true
-	config.MaxAge = 12 * time.Hour
+  
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowMethods = []string{"POST", "GET", "PUT", "PATCH", "OPTIONS"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"}
+	corsConfig.ExposeHeaders = []string{"Content-Length"}
+	corsConfig.AllowCredentials = true
+	corsConfig.MaxAge = 12 * time.Hour
 
-	r.Use(cors.New(config))
+	r.Use(cors.New(corsConfig))
 	r.GET("/health", health)
 	api := r.Group("/api/v1")
 	api.POST("/signup", userHandler.Signup)
