@@ -43,9 +43,10 @@ func main() {
 	authMiddleware := middleware.AuthMiddleware(redisClient)
 
 	r := gin.Default()
+  
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
-	corsConfig.AllowMethods = []string{"POST", "GET", "PUT", "OPTIONS"}
+	corsConfig.AllowMethods = []string{"POST", "GET", "PUT", "PATCH", "OPTIONS"}
 	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"}
 	corsConfig.ExposeHeaders = []string{"Content-Length"}
 	corsConfig.AllowCredentials = true
@@ -53,9 +54,10 @@ func main() {
 
 	r.Use(cors.New(corsConfig))
 	r.GET("/health", health)
-	r.POST("/api/v1/signup", userHandler.Signup)
-	r.POST("/api/v1/login", userHandler.Login)
-	authorized := r.Group("/api/v1")
+	api := r.Group("/api/v1")
+	api.POST("/signup", userHandler.Signup)
+	api.POST("/login", userHandler.Login)
+	authorized := api.Group("")
 	authorized.Use(authMiddleware)
 	{
 		authorized.GET("/profile", userHandler.GetProfile)
