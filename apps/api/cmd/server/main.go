@@ -50,7 +50,8 @@ func main() {
 		log.Fatalf("Failed to initialize S3 client: %v", err)
 	}
 	notesService := service.NewNoteService(noteRepository, s3Client)
-	quizHandler := handler.NewQuizHandler(quizService, notesService, appConfig)
+	noteHandler := handler.NewNoteHandler(notesService)
+	quizHandler := handler.NewQuizHandler(quizService, notesService)
 
 	r := gin.Default()
 
@@ -72,6 +73,11 @@ func main() {
 	{
 		authorized.GET("/profile", userHandler.GetProfile)
 		authorized.POST("/logout", userHandler.Logout)
+
+		authorized.POST("/notes", noteHandler.CreateNote)
+		authorized.GET("/notes/:id", noteHandler.GetNote)
+		authorized.DELETE("/notes/:id", noteHandler.DeleteNote)
+
 		authorized.POST("/quiz", quizHandler.CreateQuiz)
 	}
 
