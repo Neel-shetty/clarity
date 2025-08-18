@@ -9,7 +9,7 @@ import (
 )
 
 type QuizService interface {
-	CreateQuiz(ctx context.Context, userID uuid.UUID, noteIDs []*model.Note) (*model.Quiz, error)
+	CreateQuiz(ctx context.Context, userID uuid.UUID, title string, noteIDs []*model.Note) (*model.Quiz, error)
 	GetQuizByID(ctx context.Context, id uuid.UUID) (*model.Quiz, error)
 	ListUserQuizzes(ctx context.Context, userID uuid.UUID) ([]*model.Quiz, error)
 	DeleteQuiz(ctx context.Context, id uuid.UUID) error
@@ -23,10 +23,16 @@ func NewQuizService(repo repository.QuizRepository) QuizService {
 	return &quizService{repo}
 }
 
-func (s *quizService) CreateQuiz(ctx context.Context, userID uuid.UUID, notes []*model.Note) (*model.Quiz, error) {
+func (s *quizService) CreateQuiz(ctx context.Context, userID uuid.UUID, title string, notes []*model.Note) (*model.Quiz, error) {
+	uuid, err:= uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
 	quiz := &model.Quiz{
+		ID: uuid,
 		UserID: userID,
 		Notes:  notes,
+		Title:  title,
 	}
 	if err := s.repo.CreateQuiz(ctx, quiz); err != nil {
 		return nil, err

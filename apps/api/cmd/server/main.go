@@ -10,11 +10,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Neel-shetty/clarity/internal/handler"
 	"github.com/Neel-shetty/clarity/internal/config"
+	"github.com/Neel-shetty/clarity/internal/handler"
 	"github.com/Neel-shetty/clarity/internal/middleware"
 	"github.com/Neel-shetty/clarity/internal/repository"
 	"github.com/Neel-shetty/clarity/internal/service"
+	"github.com/Neel-shetty/clarity/internal/storage"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -41,9 +42,18 @@ func main() {
 	redisSessionService := service.NewRedisSessionService(redisClient)
 	userHandler := handler.NewUserHandler(userService, redisSessionService, appConfig)
 	authMiddleware := middleware.AuthMiddleware(redisClient)
+	quizRepository := repository.NewQuizRepository(db)
+	noteRepository := repository.NewNoteRepository(db)
+	quizService := service.NewQuizService(quizRepository)
+	s3Client, err := storage.NewS3Client(context.Background(), "commit-clarity-dev-ap-south-notes")
+	if err != nil {
+		log.Fatalf("Failed to initialize S3 client: %v", err)
+	}
+	notesService := service.NewNoteService(noteRepository, s3Client)
+	quizHandler := handler.NewQuizHandler(quizService, notesService, appConfig)
 
 	r := gin.Default()
-  
+
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	corsConfig.AllowMethods = []string{"POST", "GET", "PUT", "PATCH", "OPTIONS"}
@@ -62,6 +72,7 @@ func main() {
 	{
 		authorized.GET("/profile", userHandler.GetProfile)
 		authorized.POST("/logout", userHandler.Logout)
+		authorized.POST("/quiz", quizHandler.CreateQuiz)
 	}
 
 	port := os.Getenv("PORT")
@@ -69,7 +80,7 @@ func main() {
 		port = "8080"
 	}
 	service := &http.Server{
-		Addr:    ":" + port,
+		Addr:    "127.0.0.1:" + port,
 		Handler: r,
 	}
 	go func() {

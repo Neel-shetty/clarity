@@ -43,8 +43,13 @@ var allowedTypes = []string{
 var mb10 = 10 * 1024 * 1024
 
 func (s *noteService) CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*model.Note, *s3.PresignedPostRequest, error) {
-	key := fmt.Sprintf("%s%s", userID.String(), fileName)
+	uuid, err:= uuid.NewV7()
+	if err != nil {
+		return nil, &s3.PresignedPostRequest{}, err
+	}
+	key := fmt.Sprintf("notes/%s/%s", uuid.String(), fileName)
 	note := &model.Note{
+		ID: uuid,
 		UserID:   userID,
 		S3Key:    key,
 		FileName: fileName,

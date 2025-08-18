@@ -90,7 +90,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 }
 
 func (h *UserHandler) GetProfile(c *gin.Context) {
-	userId, exists := c.Get("userId")
+	userId, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized,
 			gin.H{"error": "User Id is not found in the session"})
