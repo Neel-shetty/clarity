@@ -8,12 +8,12 @@ import (
 	"github.com/Neel-shetty/clarity/internal/model"
 	"github.com/Neel-shetty/clarity/internal/repository"
 	"github.com/Neel-shetty/clarity/internal/storage"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
+	// "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gofrs/uuid/v5"
 )
 
 type NoteService interface {
-	CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*model.Note, *s3.PresignedPostRequest, error)
+	CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*noteResponse, error)
 	GetNoteByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (*model.Note, error)
 	DeleteNote(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }
@@ -21,6 +21,11 @@ type NoteService interface {
 type noteService struct {
 	repo    repository.NoteRepository
 	storage storage.Storage
+}
+
+type noteResponse struct {
+	Note      *model.Note `json:"note"`
+	UploadURL string      `json:"uploadUrl"`
 }
 
 func NewNoteService(repo repository.NoteRepository, storage storage.Storage) NoteService {
@@ -42,30 +47,62 @@ var allowedTypes = []string{
 
 var mb10 = 10 * 1024 * 1024
 
-func (s *noteService) CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*model.Note, *s3.PresignedPostRequest, error) {
-	uuid, err:= uuid.NewV7()
+func (s *noteService) CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*noteResponse, error) {
+	noteID, err := uuid.NewV7()
 	if err != nil {
-		return nil, &s3.PresignedPostRequest{}, err
+		// Note: The error return is now just (nil, error), no empty S3 object.
+		return nil, fmt.Errorf("failed to generate note ID: %w", err)
 	}
-	key := fmt.Sprintf("notes/%s/%s", uuid.String(), fileName)
+
+	key := fmt.Sprintf("notes/%s/%s", noteID.String(), fileName)
 	note := &model.Note{
-		ID: uuid,
+		ID:       noteID,
 		UserID:   userID,
-		S3Key:    key,
+		S3Key:    key, // We can even rename this to "StorageKey" to be more generic
 		FileName: fileName,
 	}
 
 	if err := s.repo.CreateNote(ctx, note); err != nil {
-		return nil, &s3.PresignedPostRequest{}, err
+		return nil, fmt.Errorf("failed to create note in repo: %w", err)
 	}
 
-	presignedReq, err := s.storage.GenerateUploadURL(ctx, key, contentType, allowedTypes, mb10, 10*time.Minute)
+	uploadURL, err := s.storage.GenerateUploadURL(ctx, key, contentType, allowedTypes, mb10, 10*time.Minute)
 	if err != nil {
-		return nil, &s3.PresignedPostRequest{}, err
+		return nil, fmt.Errorf("storage provider failed: %w", err)
 	}
 
-	return note, presignedReq, nil
+	response := &noteResponse{
+		Note:      note,
+		UploadURL: uploadURL,
+	}
+
+	return response, nil
 }
+
+// func (s *noteService) CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*model.Note, *s3.PresignedPostRequest, error) {
+// 	uuid, err:= uuid.NewV7()
+// 	if err != nil {
+// 		return nil, &s3.PresignedPostRequest{}, err
+// 	}
+// 	key := fmt.Sprintf("notes/%s/%s", uuid.String(), fileName)
+// 	note := &model.Note{
+// 		ID: uuid,
+// 		UserID:   userID,
+// 		S3Key:    key,
+// 		FileName: fileName,
+// 	}
+//
+// 	if err := s.repo.CreateNote(ctx, note); err != nil {
+// 		return nil, &s3.PresignedPostRequest{}, err
+// 	}
+//
+// 	presignedReq, err := s.storage.GenerateUploadURL(ctx, key, contentType, allowedTypes, mb10, 10*time.Minute)
+// 	if err != nil {
+// 		return nil, &s3.PresignedPostRequest{}, err
+// 	}
+//
+// 	return note, presignedReq, nil
+// }
 
 func (s *noteService) GetNoteByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (*model.Note, error) {
 	note, err := s.repo.FindByID(ctx, id)
