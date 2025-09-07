@@ -8,12 +8,12 @@ import (
 )
 
 type Note struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;"`
-	UserID    uuid.UUID `gorm:"type:uuid;not null"`
-	FileName  string    `gorm:"type:text;not null"`
-	S3Key     string    `gorm:"type:text;uniqueIndex;not null"`
-	User      User      `gorm:"foreignKey:UserID"`
-	CreatedAt time.Time
+	ID         uuid.UUID `gorm:"type:uuid;primary_key;"`
+	UserID     uuid.UUID `gorm:"type:uuid;not null"`
+	FileName   string    `gorm:"type:text;not null"`
+	StorageKey string    `gorm:"type:text;uniqueIndex;not null"`
+	User       User      `gorm:"foreignKey:UserID"`
+	CreatedAt  time.Time
 }
 
 type Quiz struct {

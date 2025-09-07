@@ -36,7 +36,7 @@ func (h *NoteHandler) CreateNote(c *gin.Context) {
 		return
 	}
 
-	note, presignedUrl, err := h.noteService.CreateNote(c.Request.Context(), userID, reqBody.FileName, reqBody.ContentType)
+	res, err := h.noteService.CreateNote(c.Request.Context(), userID, reqBody.FileName, reqBody.ContentType)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "unable to create note", "error": err.Error()})
 		return
@@ -44,8 +44,8 @@ func (h *NoteHandler) CreateNote(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "note created successfully",
-		"note":         note,
-		"presignedUrl": presignedUrl,
+		"note":         res.Note,
+		"presignedUrl": res.UploadURL,
 	})
 }
 

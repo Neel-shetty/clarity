@@ -50,16 +50,15 @@ var mb10 = 10 * 1024 * 1024
 func (s *noteService) CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*noteResponse, error) {
 	noteID, err := uuid.NewV7()
 	if err != nil {
-		// Note: The error return is now just (nil, error), no empty S3 object.
 		return nil, fmt.Errorf("failed to generate note ID: %w", err)
 	}
 
 	key := fmt.Sprintf("notes/%s/%s", noteID.String(), fileName)
 	note := &model.Note{
-		ID:       noteID,
-		UserID:   userID,
-		S3Key:    key, // We can even rename this to "StorageKey" to be more generic
-		FileName: fileName,
+		ID:         noteID,
+		UserID:     userID,
+		StorageKey: key,
+		FileName:   fileName,
 	}
 
 	if err := s.repo.CreateNote(ctx, note); err != nil {

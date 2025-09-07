@@ -45,11 +45,15 @@ func main() {
 	quizRepository := repository.NewQuizRepository(db)
 	noteRepository := repository.NewNoteRepository(db)
 	quizService := service.NewQuizService(quizRepository)
-	s3Client, err := storage.NewS3Client(context.Background(), "commit-clarity-dev-ap-south-notes")
+	// s3Client, err := storage.NewS3Client(context.Background(), "commit-clarity-dev-ap-south-notes")
+	// if err != nil {
+	// 	log.Fatalf("Failed to initialize S3 client: %v", err)
+	// }
+	azureClient, err := storage.NewAzureBlobClient("clarityquiznotes")
 	if err != nil {
-		log.Fatalf("Failed to initialize S3 client: %v", err)
+		log.Fatalf("Failed to initialize azure client : %v", err)
 	}
-	notesService := service.NewNoteService(noteRepository, s3Client)
+	notesService := service.NewNoteService(noteRepository, azureClient)
 	noteHandler := handler.NewNoteHandler(notesService)
 	quizHandler := handler.NewQuizHandler(quizService, notesService)
 

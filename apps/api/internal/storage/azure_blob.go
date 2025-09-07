@@ -85,15 +85,15 @@ func (c *AzureBlobClient) GenerateUploadURL(ctx context.Context, key string, con
 	return c.generateSASURL(ctx, key, expiry, permissions, contentType)
 }
 
-// func (c *AzureBlobClient) GenerateDownloadURL(ctx context.Context, key string, expiry time.Duration) (string, error) {
-// 	permissions := sas.BlobPermissions{Read: true}
-// 	return c.generateSASURL(ctx, key, expiry, permissions)
-// }
-//
-// func (c *AzureBlobClient) Delete(ctx context.Context, key string) error {
-// 	_, err := c.client.DeleteBlob(ctx, c.containerName, key, nil)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to delete blob %s: %w", key, err)
-// 	}
-// 	return nil
-// }
+func (c *AzureBlobClient) GenerateDownloadURL(ctx context.Context, key string, expiry time.Duration) (string, error) {
+	permissions := sas.BlobPermissions{Read: true}
+	return c.generateSASURL(ctx, key, expiry, permissions, "")
+}
+
+func (c *AzureBlobClient) Delete(ctx context.Context, key string) error {
+	_, err := c.client.DeleteBlob(ctx, c.containerName, key, nil)
+	if err != nil {
+		return fmt.Errorf("failed to delete blob %s: %w", key, err)
+	}
+	return nil
+}
