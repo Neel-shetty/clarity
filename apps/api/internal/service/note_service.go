@@ -1,0 +1,130 @@
+package service
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/Neel-shetty/clarity/internal/model"
+	"github.com/Neel-shetty/clarity/internal/repository"
+	"github.com/Neel-shetty/clarity/internal/storage"
+	// "github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/gofrs/uuid/v5"
+)
+
+type NoteService interface {
+	CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*noteResponse, error)
+	GetNoteByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (*model.Note, error)
+	DeleteNote(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
+}
+
+type noteService struct {
+	repo    repository.NoteRepository
+	storage storage.Storage
+}
+
+type noteResponse struct {
+	Note      *model.Note `json:"note"`
+	UploadURL string      `json:"uploadUrl"`
+}
+
+func NewNoteService(repo repository.NoteRepository, storage storage.Storage) NoteService {
+	return &noteService{repo, storage}
+}
+
+var allowedTypes = []string{
+	// PDF
+	"application/pdf",
+
+	// Microsoft Word
+	"application/msword", // .doc
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+
+	// Microsoft PowerPoint
+	"application/vnd.ms-powerpoint",                                             // .ppt
+	"application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+}
+
+var mb10 = 10 * 1024 * 1024
+
+func (s *noteService) CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*noteResponse, error) {
+	noteID, err := uuid.NewV7()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate note ID: %w", err)
+	}
+
+	key := fmt.Sprintf("notes/%s/%s", noteID.String(), fileName)
+	note := &model.Note{
+		ID:         noteID,
+		UserID:     userID,
+		StorageKey: key,
+		FileName:   fileName,
+	}
+
+	if err := s.repo.CreateNote(ctx, note); err != nil {
+		return nil, fmt.Errorf("failed to create note in repo: %w", err)
+	}
+
+	uploadURL, err := s.storage.GenerateUploadURL(ctx, key, contentType, allowedTypes, mb10, 10*time.Minute)
+	if err != nil {
+		return nil, fmt.Errorf("storage provider failed: %w", err)
+	}
+
+	response := &noteResponse{
+		Note:      note,
+		UploadURL: uploadURL,
+	}
+
+	return response, nil
+}
+
+// func (s *noteService) CreateNote(ctx context.Context, userID uuid.UUID, fileName string, contentType string) (*model.Note, *s3.PresignedPostRequest, error) {
+// 	uuid, err:= uuid.NewV7()
+// 	if err != nil {
+// 		return nil, &s3.PresignedPostRequest{}, err
+// 	}
+// 	key := fmt.Sprintf("notes/%s/%s", uuid.String(), fileName)
+// 	note := &model.Note{
+// 		ID: uuid,
+// 		UserID:   userID,
+// 		S3Key:    key,
+// 		FileName: fileName,
+// 	}
+//
+// 	if err := s.repo.CreateNote(ctx, note); err != nil {
+// 		return nil, &s3.PresignedPostRequest{}, err
+// 	}
+//
+// 	presignedReq, err := s.storage.GenerateUploadURL(ctx, key, contentType, allowedTypes, mb10, 10*time.Minute)
+// 	if err != nil {
+// 		return nil, &s3.PresignedPostRequest{}, err
+// 	}
+//
+// 	return note, presignedReq, nil
+// }
+
+func (s *noteService) GetNoteByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (*model.Note, error) {
+	note, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if note.UserID != userID {
+		return nil, fmt.Errorf("unauthorized: you do not own this note")
+	}
+	return note, nil
+}
+
+func (s *noteService) DeleteNote(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
+	note, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if note.UserID != userID {
+		return fmt.Errorf("unauthorized: you do not own this note")
+	}
+
+	if err := s.repo.DeleteNote(ctx, id); err != nil {
+		return err
+	}
+	return nil
+}

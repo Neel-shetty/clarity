@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid/v5"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -21,13 +21,16 @@ func NewRedisSessionService(client *redis.Client) *RedisSessionService {
 }
 
 func (s *RedisSessionService) CreateSession(ctx context.Context, userID uuid.UUID, ttl time.Duration) (string, error) {
-	sessionID := uuid.New().String()
-	key := s.prefix + sessionID
-	err := s.client.Set(ctx, key, userID.String(), ttl).Err()
+	sessionID, err := uuid.NewV7()
 	if err != nil {
 		return "", err
 	}
-	return sessionID, nil
+	key := s.prefix + sessionID.String()
+	err = s.client.Set(ctx, key, userID.String(), ttl).Err()
+	if err != nil {
+		return "", err
+	}
+	return sessionID.String(), nil
 }
 
 func (s *RedisSessionService) GetUserID(ctx context.Context, sessionID string) (uuid.UUID, error) {
@@ -35,7 +38,7 @@ func (s *RedisSessionService) GetUserID(ctx context.Context, sessionID string) (
 	if err != nil {
 		return uuid.UUID{}, err
 	}
-	return uuid.Parse(val)
+	return uuid.FromString(val)
 }
 
 func (s *RedisSessionService) DeleteSession(ctx context.Context, sessionID string) error {

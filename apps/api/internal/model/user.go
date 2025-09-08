@@ -3,20 +3,24 @@ package model
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid/v5"
 )
 
 type User struct {
-	Id           uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	ID           uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	Name         string    `gorm:"not null"`
 	Email        string    `gorm:"unique;not null"`
 	PasswordHash string    `gorm:"not null"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
+
 type Profile struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;"`
+	UserID    uuid.UUID `gorm:"type:uuid;uniqueIndex;not null"`
+	FullName  string    `gorm:"type:varchar(255)"`
+	AvatarURL string    `gorm:"type:text"`
+	Bio       string    `gorm:"type:text"`
 }
 
 type SignUp struct {

@@ -29,7 +29,7 @@ func AuthMiddleware(redisClient *redis.Client) gin.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not refresh session for user %s: %v", userId, err)
 		}
-		c.Set("userId", userId)
+		c.Set("userID", userId)
 		c.Next()
 
 	}

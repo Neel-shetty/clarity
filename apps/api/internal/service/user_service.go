@@ -6,7 +6,7 @@ import (
 
 	"github.com/Neel-shetty/clarity/internal/model"
 	"github.com/Neel-shetty/clarity/internal/repository"
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -37,7 +37,13 @@ func (s *userService) Signup(ctx context.Context, signup *model.SignUp) error {
 	if err != nil {
 		return err
 	}
+
+	uuid, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
 	user := &model.User{
+		ID:           uuid,
 		Name:         signup.Name,
 		Email:        signup.Email,
 		PasswordHash: string(hashPass),

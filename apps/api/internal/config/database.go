@@ -41,7 +41,7 @@ func ConnectDB() (*gorm.DB, error) {
 	sqlDb.SetMaxIdleConns(25)
 	sqlDb.SetConnMaxLifetime(5 * time.Minute)
 	fmt.Println("Database successfully connected to GORM")
-	if err := db.AutoMigrate(&model.User{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}, &model.Profile{}, &model.Quiz{}, &model.Note{}, &model.Question{}, &model.QuizAttempt{}); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 	return db, nil
